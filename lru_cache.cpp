@@ -27,6 +27,10 @@ public:
         capacity = 10;
         entries = 0;
     }
+    ~LRUCache(){
+        mCacheList.clear();
+        mCacheMap.clear();
+    }
     //キャッシュへの挿入
     void insert(std::string key, int data){
         mutex.lock();
