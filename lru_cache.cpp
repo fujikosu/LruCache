@@ -1,78 +1,100 @@
 #include "stdafx.h"
+#include <iostream>
+#include <string>
 #include <list>
-#include <hash_map>
+#include <unordered_map>
 
 typedef std::pair<std::string, int> EntryPair;
 typedef std::list<EntryPair> CacheList;
-typedef stdext::hash_map<std::string, CacheList::iterator> CacheMap;
+typedef std::unordered_map<std::string, CacheList::iterator> CacheMap;
 
 
 class LRUCache{
 private:
-	int capacity;
-	int entries;
-	//LRUƒLƒƒƒbƒVƒ…–{‘Ì
-	CacheList mCacheList;
-	//ƒf[ƒ^‚Ö‚ÌƒAƒNƒZƒX‚ðO(1)‚Å’S•Û
-	CacheMap mCacheMap;
+    int capacity;
+    int entries;
+    //LRUã‚­ãƒ£ãƒƒã‚·ãƒ¥æœ¬ä½“
+    CacheList mCacheList;
+    //ãƒ‡ãƒ¼ã‚¿ã¸ã®ã‚¢ã‚¯ã‚»ã‚¹ã‚’O(1)ã§æ‹…ä¿
+    CacheMap mCacheMap;
 public:
-	LRUCache(size_t size){
-		//¡‰ñ‚Í10ŒÅ’è
-		capacity = 10;
-		entries = 0;
-	}
-	//ƒLƒƒƒbƒVƒ…‚Ö‚Ì‘}“ü
-	void insert(std::string key, int data){
-		//Vƒf[ƒ^‚Ìê‡
-		if (mCacheMap.count(key) == 0)
-		{
-			//list‚Ìæ“ª‚ÉƒNƒGƒŠ’Ç‰Á
-			mCacheList.push_front(std::make_pair(key, data));
-			//ƒ|ƒCƒ“ƒ^‚ÌˆÊ’u‚ð•ÛŽ
-			mCacheMap[key] = mCacheList.begin();
-			entries++;
-			if (entries > capacity)
-			{
-				//key‚ðŠî‚Élist‚ÌÅŒã”ö‚ð‚³‚·ƒ|ƒCƒ“ƒ^‚ðÁ‹Ž
-				mCacheMap.erase(mCacheList.back().first);
-				//ƒLƒƒƒbƒVƒ…‚ÌLRU—v‘f‚ðíœ
-				mCacheList.pop_back();
-				entries--;
-			}
-		}
-		//Šù‚É‚ ‚éƒf[ƒ^‚Ìê‡
-		else
-		{
-			mCacheList.erase(mCacheMap[key]);
-			mCacheList.push_front(std::make_pair(key, data));
-			//ƒ|ƒCƒ“ƒ^‚ÌˆÊ’u‚ðæ“ª‚ÉXV
-			mCacheMap[key] = mCacheList.begin();
-		}
-	}
-	//key‚ðŠî‚É’l‚ÌŽæ“¾
-	int get(std::string key){
-		if (mCacheMap.count(key) == 1){
-			EntryPair value = *mCacheMap[key];
-			//Œ»Ý‚ÌˆÊ’u‚©‚çíœ‚µAÅ‰‚ÌˆÊ’u‚É•ÏX
-			mCacheList.erase(mCacheMap[key]);
-			mCacheList.push_front(value);
-			//ƒ|ƒCƒ“ƒ^‚ÌˆÊ’u‚ðæ“ª‚ÉXV
-			mCacheMap[key] = mCacheList.begin();
-			return value.second;
-		}
-		else
-		{
-			return 0;
-		}
-	}
+    LRUCache(size_t size){
+        //ä»Šå›žã¯10å›ºå®š
+        capacity = 10;
+        entries = 0;
+    }
+    //ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã¸ã®æŒ¿å…¥
+    void insert(std::string key, int data){
+        //æ–°ãƒ‡ãƒ¼ã‚¿ã®å ´åˆ
+        if (mCacheMap.count(key) == 0)
+        {
+            //listã®å…ˆé ­ã«ã‚¯ã‚¨ãƒªè¿½åŠ 
+            mCacheList.push_front(std::make_pair(key, data));
+            //ãƒã‚¤ãƒ³ã‚¿ã®ä½ç½®ã‚’ä¿æŒ
+            mCacheMap[key] = mCacheList.begin();
+            entries++;
+            if (entries > capacity)
+            {
+                //keyã‚’åŸºã«listã®æœ€å¾Œå°¾ã‚’ã•ã™ãƒã‚¤ãƒ³ã‚¿ã‚’æ¶ˆåŽ»
+                mCacheMap.erase(mCacheList.back().first);
+                //ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã®LRUè¦ç´ ã‚’å‰Šé™¤
+                mCacheList.pop_back();
+                entries--;
+            }
+        }
+        //æ—¢ã«ã‚ã‚‹ãƒ‡ãƒ¼ã‚¿ã®å ´åˆ
+        else
+        {
+            mCacheList.erase(mCacheMap[key]);
+            mCacheList.push_front(std::make_pair(key, data));
+            //ãƒã‚¤ãƒ³ã‚¿ã®ä½ç½®ã‚’å…ˆé ­ã«æ›´æ–°
+            mCacheMap[key] = mCacheList.begin();
+        }
+    }
+    //keyã‚’åŸºã«å€¤ã®å–å¾—
+    int get(std::string key){
+        if (mCacheMap.count(key) == 1){
+            EntryPair value = *mCacheMap[key];
+            //ç¾åœ¨ã®ä½ç½®ã‹ã‚‰å‰Šé™¤ã—ã€æœ€åˆã®ä½ç½®ã«å¤‰æ›´
+            mCacheList.erase(mCacheMap[key]);
+            mCacheList.push_front(value);
+            //ãƒã‚¤ãƒ³ã‚¿ã®ä½ç½®ã‚’å…ˆé ­ã«æ›´æ–°
+            mCacheMap[key] = mCacheList.begin();
+            return value.second;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
-	void move(std::string key){
+    void move(std::string key){
 
-	}
+    }
 };
 
 
 
 int main(){
-
+	
+	LRUCache* lruCache = new LRUCache(10);
+	lruCache->insert("one",1);
+	lruCache->insert("two",2);
+	lruCache->insert("three",3);
+	lruCache->insert("four",4);
+	lruCache->insert("five",5);
+	lruCache->insert("six",6);
+	lruCache->insert("seven",7);
+	lruCache->insert("eight",8);
+	lruCache->insert("nine",9);
+	lruCache->insert("ten",10);
+	std::cout << lruCache->get("one") << std::endl;
+	std::cout << lruCache->get("eleven")<< std::endl;
+	lruCache->insert("eleven",11);
+	std::cout << lruCache->get("two")<< std::endl;
+	std::cout << lruCache->get("eleven")<< std::endl;
+	lruCache->insert("twelve",12);
+	std::cout << lruCache->get("twelve")<< std::endl;
+	std::cout << lruCache->get("three")<< std::endl;
+	std::cout << lruCache->get("thirteen")<< std::endl;
 }
