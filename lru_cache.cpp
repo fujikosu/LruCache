@@ -6,11 +6,12 @@
 #include <thread>
 #include <mutex>
 
+
 typedef std::pair<std::string, int> EntryPair;
 typedef std::list<EntryPair> CacheList;
 typedef std::unordered_map<std::string, CacheList::iterator> CacheMap;
 
-
+template<typename DATA>
 class LRUCache{
 private:
     int capacity;
@@ -32,7 +33,7 @@ public:
         mCacheMap.clear();
     }
     //キャッシュへの挿入
-    void insert(std::string key, int data){
+    void insert(std::string key, DATA data){
         mutex.lock();
         std::cout << "insert " << data << std::endl; 
         //新データの場合
@@ -82,7 +83,7 @@ public:
     }
 };
 
-void test(LRUCache& lruCache){
+void test(LRUCache<int>& lruCache){
     lruCache.insert("one",1);
     lruCache.insert("two",2);
     lruCache.insert("three",3);
@@ -105,7 +106,7 @@ void test(LRUCache& lruCache){
     return;
 }
 
-void test2(LRUCache& lruCache){
+void test2(LRUCache<int>& lruCache){
     lruCache.insert("1one",101);
     lruCache.insert("1two",102);
     lruCache.insert("1three",103);
@@ -130,7 +131,7 @@ void test2(LRUCache& lruCache){
 
 
 int main(){
-    LRUCache lruCache(10);
+    LRUCache<int> lruCache(10);
     std::thread thread1(test,std::ref(lruCache));
     std::thread thread2(test2,std::ref(lruCache));
     thread1.join();
