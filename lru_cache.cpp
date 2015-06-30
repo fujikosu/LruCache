@@ -1,4 +1,4 @@
-//#include "stdafx.h"
+//#include "stdafx.h"　Visual Studio で必要
 #include <iostream>
 #include <string>
 #include <list>
