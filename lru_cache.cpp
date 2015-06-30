@@ -5,14 +5,15 @@
 #include <unordered_map>
 #include <thread>
 #include <mutex>
+#include <typeinfo>
+#include <opencv2/highgui/highgui.hpp>
 
-
-typedef std::pair<std::string, int> EntryPair;
-typedef std::list<EntryPair> CacheList;
-typedef std::unordered_map<std::string, CacheList::iterator> CacheMap;
 
 template<typename DATA>
 class LRUCache{
+    typedef std::pair<std::string, DATA> EntryPair;
+    typedef std::list<EntryPair> CacheList;
+    typedef std::unordered_map<std::string, typename CacheList::iterator> CacheMap;
 private:
     int capacity;
     int entries;
@@ -35,7 +36,7 @@ public:
     //キャッシュへの挿入
     void insert(std::string key, DATA data){
         mutex.lock();
-        std::cout << "insert " << data << std::endl; 
+        //std::cout << "insert " << data << std::endl; 
         //新データの場合
         if (mCacheMap.count(key) == 0)
         {
@@ -64,7 +65,7 @@ public:
         mutex.unlock();
     }
     //keyを基に値の取得
-    int get(std::string key){
+    DATA get(std::string key){
         if (mCacheMap.count(key) == 1){
             mutex.lock();
             EntryPair value = *mCacheMap[key];
@@ -76,12 +77,24 @@ public:
             mutex.unlock();
             return value.second;
         }
+        //キャッシュに求める値が入っていない場合　（エラーを投げる）
         else
         {
-            return -1;
+            throw "NOT IN YOUR CACHE";
+            //値を返すようにする場合はこちら
+            //if (typeid(DATA) == typeid(cv::Mat))
+            //{
+            //  cv::Mat mtx(cv::Size(100,100), CV_16U,cv::Scalar(0,0,0));
+            //  return mtx;
+            //}
+            //if (typeid(DATA) == typeid(int))
+            //{
+            //  return -1;
+            //}
         }
     }
 };
+
 
 void test(LRUCache<int>& lruCache){
     lruCache.insert("one",1);
@@ -129,12 +142,82 @@ void test2(LRUCache<int>& lruCache){
     return;
 }
 
+//コメントアウト部をonにすればキャッシュにない画像にアクセスすることになるためエラーを吐くようになっている
+void imageTest(LRUCache<cv::Mat>& lruCache){
+    std::string filepath1 = "Sample Pictures\\angkor-wat.jpg";
+    std::string filepath2 = "Sample Pictures\\castle.jpg";
+    std::string filepath3 = "Sample Pictures\\Chrysanthemum.jpg";
+    std::string filepath4 = "Sample Pictures\\Desert.jpg";
+    std::string filepath5 = "Sample Pictures\\Hydrangeas.jpg";
+    std::string filepath6 = "Sample Pictures\\Jellyfish.jpg";
+    std::string filepath7 = "Sample Pictures\\Koala.jpg";
+    std::string filepath8 = "Sample Pictures\\Lake.jpg";
+    std::string filepath9 = "Sample Pictures\\Lighthouse.jpg";
+    std::string filepath10 = "Sample Pictures\\Penguins.jpg";
+    std::string filepath11 = "Sample Pictures\\Statue.jpg";
+    std::string filepath12 = "Sample Pictures\\Tulips.jpg";
+    
+    cv::Mat img1 = cv::imread(filepath1,1);
+    cv::Mat img2 = cv::imread(filepath2,1);
+    cv::Mat img3 = cv::imread(filepath3,1);
+    cv::Mat img4 = cv::imread(filepath4,1);
+    cv::Mat img5 = cv::imread(filepath5,1);
+    cv::Mat img6 = cv::imread(filepath6,1);
+    cv::Mat img7 = cv::imread(filepath7,1);
+    cv::Mat img8 = cv::imread(filepath8,1);
+    cv::Mat img9 = cv::imread(filepath9,1);
+    cv::Mat img10 = cv::imread(filepath10,1);
+    cv::Mat img11 = cv::imread(filepath11,1);
+    cv::Mat img12 = cv::imread(filepath12,1);
+    
+    lruCache.insert(filepath1,img1);
+    lruCache.insert(filepath2,img2);
+    lruCache.insert(filepath3,img3);
+    lruCache.insert(filepath4,img4);
+    lruCache.insert(filepath5,img5);
+    lruCache.insert(filepath6,img6);
+    lruCache.insert(filepath7,img7);
+    lruCache.insert(filepath8,img8);
+    lruCache.insert(filepath9,img9);
+    lruCache.insert(filepath10,img10);
+
+    cv::namedWindow("image1", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
+    cv::imshow("image1",lruCache.get(filepath1));
+    cv::waitKey(0);
+    
+    //cv::namedWindow("image2", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
+    //cv::imshow("image2",lruCache.get(filepath11));
+    //cv::waitKey(0);
+    
+    lruCache.insert(filepath11,img11);
+    cv::namedWindow("image3", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
+    cv::imshow("image3",lruCache.get(filepath11));
+    cv::waitKey(0);
+    
+    lruCache.insert(filepath12,img12);
+    //cv::namedWindow("image4", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
+ //   cv::imshow("image4",lruCache.get(filepath2));
+    //cv::waitKey(0);
+    
+    cv::namedWindow("image5", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
+    cv::imshow("image5",lruCache.get(filepath12));
+    cv::waitKey(0);
+    
+    return;
+}
+
 
 int main(){
-    LRUCache<int> lruCache(10);
-    std::thread thread1(test,std::ref(lruCache));
-    std::thread thread2(test2,std::ref(lruCache));
-    thread1.join();
-    thread2.join();
-    std::cout << "check " << 8 << ":" << lruCache.get("eight") << std::endl;
+    //こちらを使えばint用のキャッシュが使えるがキャッシュ内に値が入っていない場合はエラーが出て止まるようになっている
+    //LRUCache<int> lruCache(10);
+    //std::thread thread1(test,std::ref(lruCache));
+    //std::thread thread2(test2,std::ref(lruCache));
+    //thread1.join();
+    //thread2.join();
+    //std::cout << "check " << 8 << ":" << lruCache.get("eight") << std::endl;
+
+    //画像キャッシュテスト用
+    LRUCache<cv::Mat> lruCacheImg(10);
+    std::thread thread3(imageTest,std::ref(lruCacheImg));
+    thread3.join();
 }
