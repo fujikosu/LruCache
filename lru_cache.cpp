@@ -37,7 +37,7 @@ public:
     void insert(std::string key, DATA data){
         mutex.lock();
         //std::cout << "insert " << data << std::endl; 
-        //新データの場合
+        //新データの場合（挿入しサイズをオーバーする場合は一番古いものを削除）
         if (mCacheMap.count(key) == 0)
         {
             //listの先頭にクエリ追加
@@ -54,7 +54,7 @@ public:
                 entries--;
             }
         }
-        //既にあるデータの場合
+        //既にあるデータの場合（位置を一番前にもってくるだけ）
         else
         {
             mCacheList.erase(mCacheMap[key]);
